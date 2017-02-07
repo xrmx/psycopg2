@@ -4,23 +4,43 @@ dist: xenial
 sudo: required
 language: python
 
+services:
+    - docker
+
 matrix:
-  include:
-    - python: 2.7
-    - python: 3.7
-    - python: 3.6
-    - python: 3.5
-    - python: 3.4
-      dist: trusty
+    include:
+        - env:
+            PYROOT=py27
+        - env:
+            PYROOT=py27d
+        - env:
+            PYROOT=py34
+        - env:
+            PYROOT=py34d
+        - env:
+            PYROOT=py35
+        - env:
+            PYROOT=py35d
+        - env:
+            PYROOT=py36
+        - env:
+            PYROOT=py36d
+        - env:
+            PYROOT=py37
+        - env:
+            PYROOT=py37d
 
 install:
-  - pip install -U pip setuptools wheel
-  - pip install .
-  - rm -rf psycopg2.egg-info
   - sudo scripts/travis_prepare.sh
+  - docker pull piro/manypython_i686
+
 
 script:
-  - scripts/travis_test.sh
+  - docker run --rm -v `pwd`:/psycopg2
+    -e TEST_PAST -e TEST_FUTURE -e DONT_TEST_PRESENT -e TEST_VERBOSE
+    -e PYROOT=/opt/$PYROOT
+    piro/manypython_i686
+    /psycopg2/scripts/travis_test.sh
 
 notifications:
   email: false
