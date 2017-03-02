@@ -14,7 +14,9 @@ python:
   - 3.2
 
 install:
-  - python setup.py install
+  - wget -O - http://initd.org/psycopg/upload/postgresql/postgresql-9.1.tar.bz2
+    | sudo tar xjf - -C /usr/lib/postgresql
+  - python setup.py build_ext --pg-config=/usr/lib/postgresql/9.1/bin/pg_config install
   - sudo scripts/travis_prepare.sh
 
 script:
