@@ -35,14 +35,24 @@ create () {
 
     export DATADIR="/var/lib/postgresql/$PACKAGE/psycopg"
     export PGDIR="/usr/lib/postgresql/$PACKAGE"
-    export PGBIN="$PGDIR/bin"
 
-    # install postgres versions not available on the image
-    if (( "$VERNUM" < 902 || "$VERNUM" > 906 )); then
+    # for investigation, if needed
+    # ls -l /etc/apt/sources.list.d/
+    # cat /etc/apt/sources.list.d/pgdg.list || true
+    # ls -l /usr/lib/postgresql/
+
+    # In this moment, the image offers 9.2 to 9.6, pgdg has 9.3 to 11
+    if (( "$VERNUM" >= 1000 && "$VERNUM" <= 1100 )); then
+        apt-get update
+        apt-get install -y \
+            postgresql-${VERSION} postgresql-server-dev-${VERSION}
+
+    elif (( "$VERNUM" < 902 || "$VERNUM" > 1100 )); then
         wget -O - http://initd.org/psycopg/upload/postgresql/postgresql-${PACKAGE}.tar.bz2 \
             | sudo tar xjf - -C /usr/lib/postgresql
     fi
 
+    export PGBIN="$PGDIR/bin"
     sudo -u postgres "$PGBIN/initdb" -D "$DATADIR"
 
     set_param port "$PORT"
@@ -103,8 +113,12 @@ create () {
 # Would give a permission denied error in the travis build dir
 cd /
 
+# Stop host-wide postgres otherwise installing other versions from pgdg fails
+service postgresql stop
+
 # Postgres versions supported by Travis CI
 if [[ -z "$DONT_TEST_PRESENT" ]]; then
+    create 11
     create 10
     create 9.6
     create 9.5
@@ -128,5 +142,5 @@ fi
 
 # Postgres built from master
 if [[ -n "$TEST_FUTURE" ]]; then
-    create 11 11-master
+    create 12 12-master
 fi
