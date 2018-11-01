@@ -36,7 +36,7 @@ How to make a psycopg2 release
 - Create a signed tag with the content of the relevant NEWS bit and push it.
   E.g.::
 
-    $ git tag -a -s 2_7
+    $ git tag -a -s $VERSION
 
     Psycopg 2.7 released
 
@@ -48,33 +48,39 @@ How to make a psycopg2 release
     - Added `~psycopg2.sql` module to generate SQL dynamically (:ticket:`#308`).
     ...
 
-- Update the `psycopg2-wheels`_ submodule to the tag version and push. This
-  will build the packages on `Travis CI`__ and `AppVeyor`__ and upload them to
-  the `initd.org upload`__ dir.
+- Update the `psycopg2-wheels`_ submodule to the tag version::
+
+    $ cd ./psycopg2
+    $ git fetch
+    $ git reset --hard $VERSION
+    $ cd ..
+    $ git add psycopg2
+    $ git commit -m "releasing psycopg $VERSION"
+
+- Create a tag called like the version and and push it::
+
+    $ git tag $VERSION
+    $ git push --tags
+  
+  This will create artifacts on `Travis CI`__ and `AppVeyor`__ which will be
+  uploaded on GitHub at
+  https://github.com/psycopg/psycopg2-wheels/releases/tag/$VERSION.
 
 .. _psycopg2-wheels: https://github.com/psycopg/psycopg2-wheels
 .. __: https://travis-ci.org/psycopg/psycopg2-wheels
 .. __: https://ci.appveyor.com/project/psycopg/psycopg2-wheels
-.. __: http://initd.org/psycopg/upload/
 
 - Download the packages generated (this assumes ssh configured properly)::
 
-    $ rsync -arv initd-upload:psycopg2-${VERSION} .
+    $ wget --quiet -O - "https://api.github.com/repos/psycopg/psycopg2-wheels/releases/tags/$VERSION" \
+        | jq -r '.assets | .[] | .browser_download_url'
+        | xargs wget -P psycopg2-$VERSION
 
-- Sign the packages and upload the signatures back::
+- Sign the packages::
 
     $ for f in psycopg2-${VERSION}/*.{exe,tar.gz,whl}; do \
         gpg --armor --detach-sign $f;
       done
-
-    $ rsync -arv psycopg2-${VERSION} initd-upload:
-
-- Run the ``copy-tarball.sh`` script on the server to copy the uploaded files
-  in the `tarballs`__ dir::
-
-    $ ssh psycoweb@initd.org copy-tarball.sh ${VERSION}
-
-.. __: http://initd.org/psycopg/tarballs/
 
 - Remove the ``.exe`` from the dir, because we don't want to upload them on
   PyPI::
