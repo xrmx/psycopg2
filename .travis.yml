@@ -22,7 +22,6 @@ env:
 
 install:
   - sudo scripts/travis_prepare.sh
-  - docker pull piro/manypython_i686
 
 script:
   - docker run --rm -v `pwd`:/psycopg2
