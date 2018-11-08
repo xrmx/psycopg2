@@ -9,7 +9,7 @@ services:
 
 python:
     - 2.7
-    - 3.7
+    - 3.7-dev
     - 3.6
     - 3.5
     - 3.4
@@ -26,7 +26,7 @@ install:
 script:
   - docker run --rm -v `pwd`:/psycopg2
     -e TEST_PAST -e TEST_FUTURE -e DONT_TEST_PRESENT -e TEST_VERBOSE
-    -e PYROOT="/opt/py$(echo $TRAVIS_PYTHON_VERSION | sed 's/\.//')$PYDEBUG"
+    -e PYROOT="/opt/py$(echo $TRAVIS_PYTHON_VERSION | sed 's/[^0-9]//g')$PYDEBUG"
     $IMAGE /psycopg2/scripts/travis_test.sh
 
 notifications:
