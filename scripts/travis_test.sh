@@ -54,6 +54,7 @@ cd /psycopg2/
 "$PYROOT"/bin/pip? install -U pip
 "$PYROOT"/bin/pip? install -U setuptools wheel
 "$PYROOT"/bin/python? setup.py install
+rm -r psycopg2.egg-info
 
 # Postgres versions supported by Travis CI
 if [[ -z "$DONT_TEST_PRESENT" ]]; then
