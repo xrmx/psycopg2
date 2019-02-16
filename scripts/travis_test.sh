@@ -37,27 +37,23 @@ run_test () {
 
     printf "\n\nRunning tests against PostgreSQL $VERSION (port $PORT)\n\n"
     unset PSYCOPG2_TEST_GREEN
-    "$PYEXE" -c \
+    "$PYROOT"/bin/python? -c \
         "import tests; tests.unittest.main(defaultTest='tests.test_suite')" \
         $VERBOSE
 
     printf "\n\nRunning tests against PostgreSQL $VERSION (green mode)\n\n"
     export PSYCOPG2_TEST_GREEN=1
-    "$PYEXE" -c \
+    "$PYROOT"/bin/python? -c \
         "import tests; tests.unittest.main(defaultTest='tests.test_suite')" \
         $VERBOSE
 }
 
-# Install dependencies
-
-apt-get -y update
-apt-get -y install libpq-dev
-
 # Build and install Psycopg in the selected python installation
 cd /psycopg2/
-PYEXE=$(ls -1 "$PYROOT"/bin/python{,3} 2>/dev/null | head -1)
-"$PYEXE" -m pip install -U pip setuptools
-"$PYEXE" setup.py install
+"$PYROOT"/bin/python? -m ensurepip
+"$PYROOT"/bin/pip? install -U pip
+"$PYROOT"/bin/pip? install -U setuptools wheel
+"$PYROOT"/bin/python? setup.py install
 
 # Postgres versions supported by Travis CI
 if [[ -z "$DONT_TEST_PRESENT" ]]; then
